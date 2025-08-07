@@ -10,10 +10,10 @@ from io import BytesIO
 # CSV 파일 불러오기
 @st.cache_data
 def load_data():
-    df = pd.read_csv("suneung_vocab.csv")
+    df = pd.read_csv("suneung_vocab.csv", encoding="utf-8-sig")
     return df
 
-# 발음용 MP3 생성 및 재생
+# 단어 발음을 생성하고 재생하는 함수
 def tts_audio(word):
     tts = gTTS(text=word, lang='en')
     mp3_fp = BytesIO()
@@ -25,29 +25,30 @@ def tts_audio(word):
         <audio autoplay="true" controls>
         <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
-        """
+    """
     st.markdown(md, unsafe_allow_html=True)
 
-# 앱 제목
+# 앱 UI 구성
+st.set_page_config(page_title="수능 보카 마스터", layout="centered")
 st.title("📘 수능 보카 마스터")
-st.subheader("고1을 위한 수능 필수 단어 암기 앱")
+st.caption("고1 수준 | 수능 필수 어휘 암기 앱")
 
-# 데이터 불러오기
+# 단어 데이터 불러오기
 df = load_data()
 
-# 무작위 단어 선택
-if st.button("🎲 단어 뽑기"):
-    random_idx = random.randint(0, len(df) - 1)
-    word = df.loc[random_idx, "word"]
-    pos = df.loc[random_idx, "pos"]
-    meaning = df.loc[random_idx, "meaning"]
+# 단어 뽑기
+if st.button("🎲 무작위 단어 뽑기"):
+    word_info = df.sample(1).iloc[0]
+    word = word_info["word"]
+    pos = word_info["pos"]
+    meaning = word_info["meaning"]
 
-    st.markdown(f"### 📝 단어: **{word}**")
-    st.markdown(f"**품사**: {pos}")
+    st.markdown(f"### 🔤 단어: **{word}**")
+    st.markdown(f"**품사**: *{pos}*")
     st.markdown(f"**뜻**: {meaning}")
-    
+
     if st.button("🔊 발음 듣기"):
         tts_audio(word)
 else:
-    st.markdown("👉 위 버튼을 눌러 단어를 시작해보세요.")
+    st.markdown("👆 위 버튼을 눌러 단어를 시작해보세요.")
 
